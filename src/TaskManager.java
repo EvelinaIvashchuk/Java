@@ -1,3 +1,4 @@
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 class Task {
@@ -54,9 +55,7 @@ public class TaskManager {
                 case "2": deleteTask(); break;
                 case "3": readTasks(); break;
                 case "4": updateTask(); break;
-                case "5":
-                    System.out.println("[Пошук завдання - реалізація відсутня]");
-                    break;
+                case "5": searchTask(); break;
                 case "6": sortTasks(); break;
                 case "7":
                     running = false;
@@ -140,5 +139,40 @@ public class TaskManager {
                 return;
         }
         readTasks();
+    }
+    private static void searchTask() {
+        System.out.println("Оберіть критерій пошуку:");
+        System.out.println("1. За назвою");
+        System.out.println("2. За терміном виконання (yyyy-MM-dd)");
+        System.out.print("Ваш вибір: ");
+
+        String choice = scanner.nextLine();
+
+        switch (choice) {
+            case "1":
+                System.out.print("Введіть ключове слово для пошуку в назві: ");
+                String keyword = scanner.nextLine().toLowerCase();
+                tasks.stream()
+                        .filter(task -> task.getTitle().toLowerCase().contains(keyword))
+                        .forEach(System.out::println);
+                break;
+
+            case "2":
+                System.out.print("Введіть дату виконання (yyyy-MM-dd): ");
+                try {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    Date searchDate = sdf.parse(scanner.nextLine());
+
+                    tasks.stream()
+                            .filter(task -> sdf.format(task.getDueDate()).equals(sdf.format(searchDate))) // Порівнюємо лише дату
+                            .forEach(System.out::println);
+                } catch (Exception e) {
+                    System.out.println("Невірний формат дати!");
+                }
+                break;
+
+            default:
+                System.out.println("Невірний вибір!");
+        }
     }
 }
