@@ -57,9 +57,7 @@ public class TaskManager {
                 case "5":
                     System.out.println("[Пошук завдання - реалізація відсутня]");
                     break;
-                case "6":
-                    System.out.println("[Сортування завдань - реалізація відсутня]");
-                    break;
+                case "6": sortTasks(); break;
                 case "7":
                     running = false;
                     System.out.println("Додаток закрито.");
@@ -120,5 +118,27 @@ public class TaskManager {
         int id = Integer.parseInt(scanner.nextLine());
         tasks.removeIf(task -> task.getId() == id);
         System.out.println("Завдання видалено.");
+    }
+    private static void sortTasks() {
+        System.out.println("Оберіть критерій сортування:");
+        System.out.println("1. За датою виконання (від найстаріших)");
+        System.out.println("2. За датою створення (від найновіших)");
+        System.out.print("Ваш вибір: ");
+
+        String choice = scanner.nextLine();
+        switch (choice) {
+            case "1":
+                tasks.sort(Comparator.comparing(Task::getDueDate));
+                System.out.println("Відсортовано за датою виконання:");
+                break;
+            case "2":
+                tasks.sort(Comparator.comparing(Task::getCreatedDate).reversed());
+                System.out.println("Відсортовано за датою створення:");
+                break;
+            default:
+                System.out.println("Невірний вибір!");
+                return;
+        }
+        readTasks();
     }
 }
