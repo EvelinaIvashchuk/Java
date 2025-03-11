@@ -1,42 +1,69 @@
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 
 class Task {
     private static int idCounter = 1;
+
+    @SerializedName("id")
     private int id;
+
+    @SerializedName("title")
     private String title;
+
+    @SerializedName("description")
     private String description;
-    private Date dueDate;
-    private Date createdDate;
+
+    @SerializedName("dueDate")
+    private String dueDate;
+
+    @SerializedName("createdDate")
+    private String createdDate;
 
     public Task(String title, String description, Date dueDate) {
         this.id = idCounter++;
         this.title = title;
         this.description = description;
-        this.dueDate = dueDate;
-        this.createdDate = new Date();
+        this.dueDate = formatDate(dueDate);
+        this.createdDate = formatDate(new Date());
     }
 
     public int getId() { return id; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }
-    public Date getDueDate() { return dueDate; }
-    public Date getCreatedDate() { return createdDate; }
+    public String getDueDate() { return dueDate; }
+    public String getCreatedDate() { return createdDate; }
 
     public void setTitle(String title) { this.title = title; }
     public void setDescription(String description) { this.description = description; }
-    public void setDueDate(Date dueDate) { this.dueDate = dueDate; }
+    public void setDueDate(Date dueDate) { this.dueDate = formatDate(dueDate); }
+
+    private String formatDate(Date date) {
+        return new SimpleDateFormat("yyyy-MM-dd").format(date);
+    }
 
     @Override
     public String toString() {
-        return "ID: " + id + ", Title: " + title + ", Description: " + description + ", Due: " + dueDate + ", Created: " + createdDate;
+        return "ID: " + id + ", Title: " + title + ", Description: " + description +
+                ", Due: " + dueDate + ", Created: " + createdDate;
     }
 }
+
+
 
 public class TaskManager {
     private static final Scanner scanner = new Scanner(System.in);
     private static final List<Task> tasks = new ArrayList<>();
+    private static final String FILE_NAME = "tasks.json";
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
     public static void main(String[] args) {
+        loadTasksFromFile(); // Завантажуємо завдання при запуску
         boolean running = true;
         while (running) {
             System.out.println("\nМеню:");
@@ -58,6 +85,7 @@ public class TaskManager {
                 case "5": searchTask(); break;
                 case "6": sortTasks(); break;
                 case "7":
+                    saveTasksToFile();
                     running = false;
                     System.out.println("Додаток закрито.");
                     break;
@@ -66,6 +94,29 @@ public class TaskManager {
             }
         }
         scanner.close();
+    }
+    private static void saveTasksToFile() {
+        try (Writer writer = new FileWriter(FILE_NAME)) {
+            gson.toJson(tasks, writer);
+            System.out.println("Дані збережено у файл.");
+        } catch (IOException e) {
+            System.out.println("Помилка збереження: " + e.getMessage());
+        }
+    }
+
+    // Завантаження завдань із файлу
+    private static void loadTasksFromFile() {
+        try (Reader reader = new FileReader(FILE_NAME)) {
+            List<Task> loadedTasks = gson.fromJson(reader, new TypeToken<List<Task>>(){}.getType());
+            if (loadedTasks != null) {
+                tasks.addAll(loadedTasks);
+            }
+            System.out.println("Дані завантажено з файлу.");
+        } catch (FileNotFoundException e) {
+            System.out.println("Файл не знайдено, починаємо з порожнього списку.");
+        } catch (IOException e) {
+            System.out.println("Помилка зчитування: " + e.getMessage());
+        }
     }
     private static void createTask() {
         System.out.print("Введіть назву завдання: ");
